@@ -52,17 +52,10 @@ def load_config(path: str) -> dict:
         print("ERROR: 'mail_folders' in config.json must be a non-empty list.")
         sys.exit(1)
 
-    # Optional keys, with sensible defaults so old config.json files still work
-    # unchanged -- nothing new is required to upgrade from Prompt 2.1.
     config.setdefault("state_db", DEFAULT_STATE_DB)
     config.setdefault("log_file", "email_backup.log")
     config.setdefault("initial_backup_mode", DEFAULT_INITIAL_BACKUP_MODE)
 
-    # Validate initial_backup_mode strictly. An absent key already defaulted
-    # to "recent" above, so this only fires for a key that's present but
-    # misspelled/invalid -- e.g. "ALL", "everything", "" -- which we'd
-    # rather fail loudly on than silently misinterpret.
-    mode = config["initial_backup_mode"]
     if mode not in VALID_INITIAL_BACKUP_MODES:
         print(
             f"ERROR: 'initial_backup_mode' in config.json must be one of "
@@ -86,40 +79,6 @@ def setup_logging(log_file: str) -> None:
             logging.StreamHandler(sys.stdout),
         ],
     )
-
-
-# ================= SQLITE STATE STORE =================
-#
-# TABLE 1: folder_state -- unchanged from Prompt 2 / 2.1, kept fully compatible.
-#   folder       TEXT PRIMARY KEY  -- IMAP folder name, e.g. "INBOX", "Sent"
-#   uidvalidity  INTEGER           -- server's UIDVALIDITY value for that folder
-#   last_uid     INTEGER           -- highest UID successfully saved (fast cursor)
-#   updated_at   TEXT              -- ISO timestamp of the last successful update
-#
-# This table is ONLY an optimization: it lets a normal run search
-# "UID <last_uid+1>:*" instead of rescanning everything every time. It is
-# deliberately NOT the source of truth for whether any individual message
-# was saved -- that's message_state below.
-#
-# TABLE 2: message_state -- unchanged from Prompt 2.1, the authoritative
-# per-message retry ledger.
-#   folder       TEXT NOT NULL
-#   uidvalidity  INTEGER NOT NULL
-#   uid          INTEGER NOT NULL
-#   status       TEXT NOT NULL  -- 'backed_up' or 'failed'
-#   filepath     TEXT           -- where the .eml was written (NULL if failed)
-#   attempts     INTEGER NOT NULL DEFAULT 0
-#   last_error   TEXT           -- last exception message (truncated), NULL if none
-#   updated_at   TEXT NOT NULL
-#   PRIMARY KEY (folder, uidvalidity, uid)
-#
-# Rows are never deleted, even across a UIDVALIDITY change -- old rows are
-# kept for audit history, but only rows matching the CURRENT UIDVALIDITY
-# are ever retried (see get_failed_uids()).
-#
-# Prompt 2.2 adds NO new tables and NO schema changes -- initial_backup_mode
-# only changes which SEARCH criteria are used on a folder's first run; the
-# resulting rows are stored exactly the same way either way.
 
 def init_db(db_path: str) -> sqlite3.Connection:
     """Open (creating if needed) the SQLite state database.
@@ -157,7 +116,7 @@ def init_db(db_path: str) -> sqlite3.Connection:
         """
     )
 
-    # Speeds up "find all failed UIDs for this folder+uidvalidity" lookups.
+
     conn.execute(
         """
         CREATE INDEX IF NOT EXISTS idx_message_state_retry_lookup
@@ -169,7 +128,6 @@ def init_db(db_path: str) -> sqlite3.Connection:
     return conn
 
 
-# ---- folder_state helpers (unchanged behavior from Prompt 2 / 2.1) ----
 
 def get_folder_state(conn: sqlite3.Connection, folder: str):
     """Return {'uidvalidity': int, 'last_uid': int} for a folder, or None."""
@@ -205,7 +163,6 @@ def save_folder_state(conn: sqlite3.Connection, folder: str, uidvalidity: int, l
     conn.commit()
 
 
-# ---- message_state helpers (unchanged behavior from Prompt 2.1) ----
 
 def truncate_error(message) -> str:
     """Clamp an error string to ERROR_MESSAGE_MAX_LEN characters before storing it."""
@@ -281,7 +238,6 @@ def safe_filename(text: str) -> str:
     if not text:
         return "no-subject"
 
-    # Decode possible MIME encoded words (e.g. "=?UTF-8?B?...?=")
     try:
         decoded_parts = decode_header(text)
     except Exception:
@@ -378,8 +334,7 @@ def connect_imap(server: str, port: int, account: str, password: str):
     try:
         mail.login(account, password)
     except imaplib.IMAP4.error as e:
-        # Close the socket before raising, so we don't leak connections.
-        # Note: we never include the password itself in any log/exception message.
+
         try:
             mail.logout()
         except Exception:
@@ -478,7 +433,6 @@ def backup_folder(mail: imaplib.IMAP4_SSL, conn: sqlite3.Connection, folder: str
     last_uid_floor = 0
 
     if first_run:
-        # Prompt 2.2: first-run criteria depend on initial_backup_mode.
         # "all"    -> true UID SEARCH ALL: every message currently in the folder.
         # "recent" -> unchanged Prompt 2.1 behavior: only the last `days` days.
         if initial_backup_mode == "all":
@@ -490,7 +444,6 @@ def backup_folder(mail: imaplib.IMAP4_SSL, conn: sqlite3.Connection, folder: str
             logging.info(f"No previous cursor for '{folder}'. First-time backup: "
                          f"last {days} day(s) (initial_backup_mode='recent').")
     elif folder_state["uidvalidity"] != uidvalidity:
-        # UIDVALIDITY-change resync is intentionally UNCHANGED by Prompt 2.2:
         # it always uses the days_to_backup date window, regardless of
         # initial_backup_mode. A separate, explicitly documented option
         # would be needed to make a resync use ALL instead -- see module
@@ -544,9 +497,6 @@ def backup_folder(mail: imaplib.IMAP4_SSL, conn: sqlite3.Connection, folder: str
             # Deliberately do NOT advance the cursor and deliberately do NOT
             # stop the loop -- the next failed UID still gets its own attempt,
             # and this one stays 'failed' in message_state for next time.
-
-    # ---- Step 2: discover mail using the criteria chosen above (ALL / date
-    # window / incremental cursor). ----
     try:
         status, data = mail.uid("SEARCH", None, criteria)
     except imaplib.IMAP4.error as e:
