@@ -1,0 +1,104 @@
+# ==================================================
+# Mback 1.0 — private configuration and credentials
+# ==================================================
+
+# Real IMAP account details and app password
+config.json
+config.local.json
+config.*.local.json
+
+# Environment variables / local secrets
+.env
+.env.*
+!.env.example
+
+# ==================================================
+# Private email backup data
+# ==================================================
+
+# Full email archive files and attachments
+backups/
+*.eml
+*.msg
+
+# Local SQLite backup state and temporary database files
+backup_state.db
+backup_state.db-journal
+backup_state.db-wal
+backup_state.db-shm
+*.sqlite
+*.sqlite3
+*.db
+
+# ==================================================
+# Private logs and diagnostic output
+# ==================================================
+
+*.log
+logs/
+diagnostics/
+crash_reports/
+
+# ==================================================
+# Python virtual environment and cache
+# ==================================================
+
+.venv/
+venv/
+env/
+ENV/
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Python tools / test cache
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# ==================================================
+# Flask / local development
+# ==================================================
+
+instance/
+.flaskenv
+
+# ==================================================
+# Build and packaging output
+# ==================================================
+
+build/
+dist/
+*.spec
+
+# PyInstaller temporary output
+*.manifest
+*.exe
+*.msi
+
+# ==================================================
+# Operating system and editor files
+# ==================================================
+
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ==================================================
+# Screenshots and temporary exports
+# Keep only intentional sanitized demo screenshots
+# ==================================================
+
+screenshots/private/
+exports/private/
+temp/
+tmp/

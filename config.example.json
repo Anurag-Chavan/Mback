@@ -1,0 +1,11 @@
+{
+  "imap_server": "imap.gmail.com",
+  "imap_port": 993,
+  "email_account": "Email",
+  "email_password": "Email App Password",
+  "backup_folder": "backups",
+  "days_to_backup": 7,
+  "mail_folders": ["INBOX"],
+  "state_db": "backup_state.db",
+  "log_file": "email_backup.log"
+}
