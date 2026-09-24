@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="{{ csrf_token }}" />
+  <meta name="robots" content="noindex, nofollow, noarchive" />
+  <title>{% block title %}Email Backup Dashboard{% endblock %} — Mback</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+{% from "_icons.html" import icon_shield, icon_menu, icon_alert %}
+
+<div class="app-shell">
+
+  <div
+    class="sidebar-backdrop"
+    id="sidebar-backdrop"
+    hidden
+    aria-hidden="true"
+  ></div>
+
+  <aside class="sidebar" id="sidebar" aria-label="Sidebar navigation">
+    <div class="sidebar-brand">
+      <span class="brand-mark" aria-hidden="true">{{ icon_shield() }}</span>
+
+      <div class="brand-text">
+        <strong>Mback</strong>
+        <span>Email Backup Solution</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav" aria-label="Primary navigation">
+      {% for endpoint, label in nav_items %}
+      <a
+        href="{{ url_for(endpoint) }}"
+        class="nav-link{{ ' active' if request.endpoint == endpoint else '' }}"
+        {% if request.endpoint == endpoint %}aria-current="page"{% endif %}
+      >
+        {{ label }}
+      </a>
+      {% endfor %}
+    </nav>
+
+    <div class="sidebar-footer">
+      <span class="local-pill">Local-only &middot; 127.0.0.1</span>
+
+      {% if demo_mode %}
+      <span class="demo-pill">Demo mode</span>
+      {% endif %}
+    </div>
+  </aside>
+
+  <div class="main-area">
+
+    <header class="topbar-mobile">
+      <button
+        id="sidebar-toggle"
+        class="icon-btn"
+        type="button"
+        aria-label="Open navigation"
+        aria-controls="sidebar"
+        aria-expanded="false"
+      >
+        {{ icon_menu() }}
+      </button>
+
+      <span class="mobile-title">Mback</span>
+    </header>
+
+    {% if demo_mode %}
+    <div class="demo-banner" role="status">
+      {{ icon_alert('icon') }}
+      <span>Demo data only &mdash; no live mailbox connected.</span>
+      <a href="{{ url_for('demo_notice') }}">Learn more</a>
+    </div>
+    {% endif %}
+
+    <main class="content" id="main-content">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="page-footer">
+      Runs locally at 127.0.0.1 &middot; not exposed to your LAN or the public internet.
+    </footer>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='app.js') }}" defer></script>
+{% block extra_scripts %}{% endblock %}
+</body>
+</html>

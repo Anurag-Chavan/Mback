@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon_lock, icon_check %}
+{% block title %}Security &amp; Privacy{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Security &amp; Privacy</h1>
+    <p class="subtitle">What stays local, what this dashboard can and can&rsquo;t do</p>
+  </div>
+</div>
+
+<section class="panel">
+  <h2>{{ icon_lock('icon') }}<span>Where things live</span></h2>
+  <ul class="fact-list">
+    <li>Your IMAP credentials stay only in a local <code>config.json</code> file. The dashboard never opens, parses, serves, or logs that file &mdash; it only ever passes its file path as an argument to <code>Mback.py</code>.</li>
+    <li>Full email content and attachments stay only in your local <code>backups/</code> folder as individual <code>.eml</code> files. Nothing is uploaded anywhere.</li>
+    <li>The dashboard binds only to <code>127.0.0.1</code> and is not reachable from your network or the internet.</li>
+    <li>Flask&rsquo;s debug mode is always disabled, so the interactive debugger/console is never exposed.</li>
+    <li>No external analytics, CDNs, remote fonts, trackers, or third-party APIs are loaded by any page.</li>
+    <li>All IMAP actions performed by Mback.py are read-only &mdash; it never deletes, moves, marks, or sends mail.</li>
+    <li><code>.gitignore</code> is set up to keep <code>config.json</code>, logs, <code>.eml</code> files, <code>backups/</code>, and the SQLite database out of version control.</li>
+    <li>The public/portfolio demo mode uses only fictional data (see <a href="{{ url_for('demo_notice') }}">Demo Notice</a>) and never connects to a real mailbox.</li>
+  </ul>
+  <p class="disclaimer">Binding to localhost protects this app from your network and the internet &mdash; it does not protect it from another process or person already logged into your Windows account. If your Windows account itself is compromised, this app offers no additional protection beyond that account&rsquo;s own security.</p>
+</section>
+
+<section class="panel">
+  <h2>{{ icon_check('icon') }}<span>Recommended practices</span></h2>
+  <ul class="checklist">
+    <li>Use an app password (not your main account password) for IMAP access where your provider supports it.</li>
+    <li>Enable full-disk or folder-level encryption on the machine that stores your backups.</li>
+    <li>Keep your Windows account itself protected with a strong password and screen lock.</li>
+    <li>Periodically test restoring from a <code>.eml</code> file to confirm your backups are actually usable.</li>
+    <li>Keep Python and this project&rsquo;s dependencies up to date.</li>
+    <li>Never forward this dashboard&rsquo;s port through your router &mdash; it is designed to stay on localhost only.</li>
+  </ul>
+</section>
+
+{% endblock %}

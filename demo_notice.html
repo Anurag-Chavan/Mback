@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon_alert, icon_check %}
+{% block title %}Demo Notice{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Demo &amp; Portfolio Notice</h1>
+    <p class="subtitle">How the real dashboard differs from public demonstrations</p>
+  </div>
+</div>
+
+<section class="panel">
+  {% if demo_mode %}
+  <div class="mode-badge mode-demo">{{ icon_alert() }}<span>Demo data only &mdash; no live mailbox connected</span></div>
+  {% else %}
+  <div class="mode-badge mode-live">{{ icon_check() }}<span>This instance is running against your real, local backup data</span></div>
+  {% endif %}
+
+  <p>The real Mback dashboard is a private, localhost-only tool &mdash; it runs at <code>http://127.0.0.1:5000</code> on the owner&rsquo;s own machine, reads their real <code>backup_state.db</code>, and can trigger a real backup run. It is never deployed publicly.</p>
+
+  <p>Any public visual demonstration of this project &mdash; screenshots for a CV, a LinkedIn post, or a static walkthrough &mdash; is produced with <code>DEMO_MODE = True</code>, which switches every page to a bundled, entirely fictional dataset (<code>static/demo_data.json</code>). In that mode:</p>
+
+  <ul class="fact-list">
+    <li>No real mailbox credentials, customer data, message content, attachments, logs, or actual backup files are shown, ever.</li>
+    <li>All folder names, subjects, and filenames are clearly fictional (for example, <code>demo-client@example.test</code>, &ldquo;Sample Invoice &mdash; Demo Only&rdquo;, &ldquo;Project Update &mdash; Sample&rdquo;).</li>
+    <li>&ldquo;Run Backup Now&rdquo; and opening a backup file are both disabled &mdash; demo mode cannot trigger any real action.</li>
+    <li>Every page displays the &ldquo;Demo data only&rdquo; banner shown above whenever demo mode is active.</li>
+  </ul>
+</section>
+
+{% endblock %}

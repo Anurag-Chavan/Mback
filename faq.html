@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}FAQ{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Frequently Asked Questions</h1>
+    <p class="subtitle">Common questions about how Mback and this dashboard behave</p>
+  </div>
+</div>
+
+<section class="panel faq-panel">
+
+  <details class="faq-item">
+    <summary>Does Mback delete or modify mailbox emails?</summary>
+    <p>
+      No. Mback opens configured folders in read-only mode and uses search and
+      fetch operations only. It does not delete, move, mark as read, or
+      otherwise modify messages on the mail server.
+    </p>
+  </details>
+
+  <details class="faq-item">
+    <summary>What does the first backup do?</summary>
+    <p>
+      On the first run for a folder, Mback follows the configured
+      <code>initial_backup_mode</code>. In <code>"all"</code> mode it backs
+      up every message currently in the folder. In <code>"recent"</code> mode
+      it backs up only the configured recent time window. Each backup result
+      is stored in SQLite so later runs can continue incrementally.
+    </p>
+  </details>
+
+  <details class="faq-item">
+    <summary>How are later runs incremental?</summary>
+    <p>
+      Mback remembers the highest UID it has processed for each folder. On
+      later runs, it asks the server for messages with higher UIDs, so
+      successfully backed-up messages are not normally downloaded again.
+    </p>
+  </details>
+
+  <details class="faq-item">
+    <summary>What is UIDVALIDITY?</summary>
+    <p>
+      UIDVALIDITY is an IMAP value that tells clients whether a folder&rsquo;s
+      UID sequence is still valid. If it changes, old UIDs may no longer refer
+      to the same messages. Mback detects this condition and safely re-syncs
+      instead of trusting an outdated cursor.
+    </p>
+  </details>
+
+  <details class="faq-item">
+    <summary>What happens if a message download fails?</summary>
+    <p>
+      Mback stores a failed status, an attempt count, and a limited error
+      record in its local retry ledger. On the next run, failed messages are
+      retried before newly discovered mail is processed.
+    </p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Does it save attachments?</summary>
+    <p>
+      Yes. Each message is saved as a complete <code>.eml</code> file, which
+      preserves the original message structure and included attachments.
+    </p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Where are backups stored?</summary>
+    <p>
+      Backups are stored locally in the <code>backups/</code> folder beside
+      <code>Mback.py</code>, organized by the configured mail folder. Nothing
+      is uploaded by default.
+    </p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Can it run automatically?</summary>
+    <p>
+      Yes. Mback.py is a normal local script, so Windows Task Scheduler or
+      another scheduler can run it on a chosen schedule. The dashboard does
+      not need to remain open for scheduled backups.
+    </p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Can I use the dashboard without Task Scheduler?</summary>
+    <p>
+      Yes. The <strong>Run Backup Now</strong> button triggers a single
+      manual backup when the local dashboard is running. Automatic scheduling
+      is optional.
+    </p>
+  </details>
+
+  <details class="faq-item">
+    <summary>Is the public demo connected to a real mailbox?</summary>
+    <p>
+      No. With demo mode enabled, every page uses only the fictional dataset
+      in <code>static/demo_data.json</code>. Running a real backup and
+      opening real backup files are both disabled.
+    </p>
+  </details>
+
+  <details class="faq-item">
+    <summary>What should never be uploaded to GitHub?</summary>
+    <p>
+      Never upload <code>config.json</code>, <code>backup_state.db</code>,
+      <code>backups/</code>, <code>.eml</code> files, or
+      <code>email_backup.log</code>. These should remain listed in
+      <code>.gitignore</code>. See
+      <a href="{{ url_for('security') }}">Security &amp; Privacy</a>.
+    </p>
+  </details>
+
+  <details class="faq-item">
+    <summary>How should I test restoration?</summary>
+    <p>
+      Periodically open a saved <code>.eml</code> file using a compatible mail
+      client and confirm that its content, headers, and attachments are usable.
+      A backup is only valuable if you can restore or inspect it when needed.
+    </p>
+  </details>
+
+</section>
+
+{% endblock %}

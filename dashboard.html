@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon_refresh, icon_play, icon_clock, icon_check, icon_alert, icon_folder %}
+{% block title %}Overview{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Email Backup Dashboard</h1>
+    <p class="subtitle">Local-first backup monitoring and control</p>
+  </div>
+
+  <div class="page-actions">
+    <button id="refresh-btn" class="btn btn-secondary" type="button">
+      {{ icon_refresh() }}
+      <span>Refresh Data</span>
+    </button>
+
+    <button id="run-btn" class="btn btn-primary" type="button">
+      {{ icon_play() }}
+      <span>Run Backup Now</span>
+    </button>
+  </div>
+</div>
+
+<section
+  id="run-result"
+  class="run-result"
+  hidden
+  aria-live="polite"
+></section>
+
+<section class="cards" aria-label="Summary">
+  <div class="card">
+    <div class="card-top">
+      <span class="card-label">Status</span>
+      <span class="card-icon neutral">{{ icon_clock() }}</span>
+    </div>
+
+    <span id="status-badge" class="badge badge-gray">Loading&hellip;</span>
+  </div>
+
+  <div class="card">
+    <div class="card-top">
+      <span class="card-label">Backed up messages</span>
+      <span class="card-icon good">{{ icon_check() }}</span>
+    </div>
+
+    <span id="total-backed-up" class="card-number">&ndash;</span>
+  </div>
+
+  <div class="card">
+    <div class="card-top">
+      <span class="card-label">Pending retries</span>
+      <span class="card-icon warn">{{ icon_alert() }}</span>
+    </div>
+
+    <span id="total-failed" class="card-number">&ndash;</span>
+  </div>
+
+  <div class="card">
+    <div class="card-top">
+      <span class="card-label">Configured folders</span>
+      <span class="card-icon neutral">{{ icon_folder() }}</span>
+    </div>
+
+    <span id="folder-count" class="card-number">&ndash;</span>
+  </div>
+</section>
+
+<p class="latest-success" id="latest-success" hidden></p>
+
+<section class="panel" aria-label="Folder health">
+  <h2>{{ icon_folder('icon') }}<span>Folder health</span></h2>
+
+  <div class="table-wrap">
+    <table id="folders-table">
+      <thead>
+        <tr>
+          <th>Folder</th>
+          <th>Backed up</th>
+          <th>Failed</th>
+          <th>Last UID</th>
+          <th>UIDVALIDITY</th>
+          <th>Updated</th>
+        </tr>
+      </thead>
+
+      <tbody></tbody>
+    </table>
+
+    <p class="empty-state" id="folders-empty" hidden>
+      No folders backed up yet &mdash; click &ldquo;Run Backup Now&rdquo; to get started.
+    </p>
+  </div>
+</section>
+
+<div class="two-col">
+
+  <section class="panel" aria-label="Recent backups">
+    <h2>{{ icon_check('icon') }}<span>Recent backups</span></h2>
+
+    <div class="table-wrap">
+      <table id="recent-table">
+        <thead>
+          <tr>
+            <th>Updated</th>
+            <th>Folder</th>
+            <th>UID</th>
+            <th>Status</th>
+            <th>File</th>
+          </tr>
+        </thead>
+
+        <tbody></tbody>
+      </table>
+
+      <p class="empty-state" id="recent-empty" hidden>
+        No records yet.
+      </p>
+    </div>
+
+    <a class="panel-link" href="{{ url_for('records') }}">
+      View all records
+    </a>
+  </section>
+
+  <section class="panel" aria-label="Pending retries">
+    <h2>{{ icon_alert('icon') }}<span>Pending retries</span></h2>
+
+    <div class="table-wrap">
+      <table id="failed-table">
+        <thead>
+          <tr>
+            <th>Updated</th>
+            <th>Folder</th>
+            <th>UID</th>
+            <th>Attempts</th>
+            <th>Last error</th>
+          </tr>
+        </thead>
+
+        <tbody></tbody>
+      </table>
+
+      <p class="empty-state" id="failed-empty" hidden>
+        Nothing is currently failing. Everything caught up.
+      </p>
+    </div>
+
+    <a class="panel-link" href="{{ url_for('records') }}?status=failed">
+      View all failures
+    </a>
+  </section>
+
+</div>
+
+{% endblock %}

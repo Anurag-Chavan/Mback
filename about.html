@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon_server, icon_lock, icon_shield, icon_archive, icon_database, icon_chevron_right %}
+{% block title %}About Project{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>About This Project</h1>
+    <p class="subtitle">A local-first email backup tool with a small operational dashboard</p>
+  </div>
+</div>
+
+<section class="panel">
+  <h2>The problem</h2>
+  <p>Small businesses and individuals running their own domain mail often have no simple, self-hosted way to keep an independent copy of their mailbox &mdash; most options are either a paid cloud service or a manual, error-prone export. Mback is a small, local-first tool that solves this with a script and a lightweight control panel, keeping the data on the user&rsquo;s own machine.</p>
+</section>
+
+<section class="panel">
+  <h2>Objective</h2>
+  <p>Provide reliable, incremental, read-only IMAP backups with clear visibility into what succeeded and what needs attention &mdash; without requiring a server, an account, or any data leaving the user&rsquo;s computer.</p>
+</section>
+
+<section class="panel">
+  <h2>Tech stack</h2>
+  <ul class="tag-list">
+    <li>Python</li>
+    <li>imaplib</li>
+    <li>sqlite3</li>
+    <li>Flask</li>
+    <li>HTML</li>
+    <li>CSS</li>
+    <li>JavaScript</li>
+    <li>Windows Task Scheduler (optional)</li>
+  </ul>
+</section>
+
+<section class="panel">
+  <h2>Engineering concepts demonstrated</h2>
+  <ul class="fact-list">
+    <li><strong>Incremental ingestion</strong> &mdash; UID-based cursors avoid re-fetching data that&rsquo;s already been captured.</li>
+    <li><strong>Persistence</strong> &mdash; per-folder and per-message state tracked in SQLite, safe to interrupt and resume.</li>
+    <li><strong>Failure handling &amp; retries</strong> &mdash; a dedicated retry ledger ensures a single failed message is never silently dropped.</li>
+    <li><strong>Data safety</strong> &mdash; strictly read-only mailbox access, parameterized queries, and path validation before serving any file.</li>
+    <li><strong>Local-first architecture</strong> &mdash; no server, no account, no data leaving the machine by default.</li>
+    <li><strong>User interface design</strong> &mdash; a small multi-page dashboard that turns raw database state into something scannable at a glance.</li>
+  </ul>
+</section>
+
+<section class="panel">
+  <h2>Project highlights</h2>
+  <ul class="fact-list">
+    <li>Full initial backup plus true incremental UID-based backup on every later run.</li>
+    <li>UIDVALIDITY-aware resync that never overwrites an existing local file.</li>
+    <li>A per-message retry ledger so a single failure can&rsquo;t be masked by later successes.</li>
+    <li>A dashboard that runs the backup engine as a fixed local command &mdash; never accepting a path or command from the browser.</li>
+    <li>A demo mode that swaps in fully fictional data for safe screenshots, with real actions disabled.</li>
+  </ul>
+</section>
+
+<section class="panel">
+  <h2>Architecture</h2>
+  <div class="flow-diagram" role="img" aria-label="Email server, over encrypted read-only IMAP, to the Mback backup engine, to local .eml files and SQLite state, to the Mback Dashboard">
+    <div class="flow-step">{{ icon_server() }}<span>Email server</span></div>
+    <span class="flow-arrow">{{ icon_chevron_right() }}</span>
+    <div class="flow-step">{{ icon_lock() }}<span>Read-only IMAP (SSL)</span></div>
+    <span class="flow-arrow">{{ icon_chevron_right() }}</span>
+    <div class="flow-step">{{ icon_shield() }}<span>Mback.py</span></div>
+    <span class="flow-arrow">{{ icon_chevron_right() }}</span>
+    <div class="flow-step">{{ icon_archive() }}{{ icon_database() }}<span>.eml + SQLite</span></div>
+    <span class="flow-arrow">{{ icon_chevron_right() }}</span>
+    <div class="flow-step">{{ icon_shield() }}<span>Dashboard (Flask)</span></div>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Portfolio note</h2>
+  <p class="disclaimer">Every public-facing screenshot or demonstration of this project uses fictional demo data only &mdash; generated with <code>DEMO_MODE = True</code> and the bundled <code>static/demo_data.json</code>. No real mailbox, credentials, message content, or backup files are ever shown publicly. See the <a href="{{ url_for('demo_notice') }}">Demo Notice</a> page for details.</p>
+</section>
+
+{% endblock %}

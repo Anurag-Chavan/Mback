@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon_server, icon_lock, icon_database, icon_archive, icon_shield, icon_chevron_right %}
+{% block title %}How It Works{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>How Mback Works</h1>
+    <p class="subtitle">What happens between your mail server and your local backups</p>
+  </div>
+</div>
+
+<section class="panel">
+  <div
+    class="flow-diagram"
+    role="img"
+    aria-label="Email server, over encrypted read-only IMAP, to the Mback backup engine, to local EML files and SQLite state, to the Mback Dashboard"
+  >
+    <div class="flow-step">
+      {{ icon_server() }}
+      <span>Email server</span>
+    </div>
+
+    <span class="flow-arrow" aria-hidden="true">{{ icon_chevron_right() }}</span>
+
+    <div class="flow-step">
+      {{ icon_lock() }}
+      <span>Encrypted, read-only IMAP</span>
+    </div>
+
+    <span class="flow-arrow" aria-hidden="true">{{ icon_chevron_right() }}</span>
+
+    <div class="flow-step">
+      {{ icon_shield() }}
+      <span>Mback.py backup engine</span>
+    </div>
+
+    <span class="flow-arrow" aria-hidden="true">{{ icon_chevron_right() }}</span>
+
+    <div class="flow-step">
+      {{ icon_archive() }}
+      {{ icon_database() }}
+      <span>.eml archive + SQLite state</span>
+    </div>
+
+    <span class="flow-arrow" aria-hidden="true">{{ icon_chevron_right() }}</span>
+
+    <div class="flow-step">
+      {{ icon_shield() }}
+      <span>Mback Dashboard</span>
+    </div>
+  </div>
+</section>
+
+<section class="panel">
+  <h2>Full initial backup</h2>
+
+  <p>
+    On the first run for a folder, Mback follows the configured
+    <code>initial_backup_mode</code>. With <code>"all"</code>, it saves every
+    message currently available in that folder. With <code>"recent"</code>, it
+    saves messages within the configured <code>days_to_backup</code> window.
+    Each message is stored as an individual <code>.eml</code> file, and its
+    outcome is recorded in a local SQLite database.
+  </p>
+</section>
+
+<section class="panel">
+  <h2>Incremental, UID-based backup</h2>
+
+  <p>
+    Every IMAP message has a UID, a unique identifier within its folder.
+    After the first run, Mback asks the server only for UIDs higher than the
+    highest UID already recorded by the backup engine. Later runs are fast and
+    do not normally re-download mail that has already been backed up.
+  </p>
+</section>
+
+<section class="panel">
+  <h2>UIDVALIDITY awareness</h2>
+
+  <p>
+    UIDs are only guaranteed stable while a folder&rsquo;s UIDVALIDITY value
+    remains unchanged. Mback checks this value on every run. If the server
+    ever reassigns UIDs, Mback detects the change, performs a safe re-sync,
+    and never overwrites a local file it already saved.
+  </p>
+</section>
+
+<section class="panel">
+  <h2>Per-message retry ledger</h2>
+
+  <p>
+    Every individual message has its own SQLite row recording whether it was
+    backed up or failed, together with an attempt count and the latest error.
+    A message that fails once is retried automatically on a later run, even if
+    later messages in the same folder already succeeded. A temporary failure
+    is therefore not silently skipped.
+  </p>
+</section>
+
+<section class="panel">
+  <h2>Local SQLite state</h2>
+
+  <p>
+    Per-folder cursors and per-message status live in the local
+    <code>backup_state.db</code> SQLite file beside your backups. The
+    database allows the backup engine to resume consistently after an
+    interruption and supports the dashboard&rsquo;s read-only status views.
+  </p>
+</section>
+
+<section class="panel">
+  <h2>Read-only, by design</h2>
+
+  <p>
+    Mback opens folders in read-only mode and issues search and fetch
+    commands only. It does not mark messages as read, delete messages, move
+    mail, or modify mailbox content. See
+    <a href="{{ url_for('security') }}">Security &amp; Privacy</a> for the
+    full local-data model and recommended practices.
+  </p>
+</section>
+
+<section class="panel">
+  <h2>The dashboard is separate from the backup engine</h2>
+
+  <p>
+    This dashboard does not connect directly to your mail server. It reads
+    local backup metadata from <code>backup_state.db</code> and, when you
+    explicitly use the button, starts the existing <code>Mback.py</code>
+    script through one fixed local command. The dashboard has no separate
+    IMAP credentials or mailbox logic of its own.
+  </p>
+</section>
+
+<section class="panel">
+  <h2>Manual runs, with automation as an option</h2>
+
+  <p>
+    You can use the dashboard&rsquo;s <strong>Run Backup Now</strong> button
+    whenever you want to trigger a manual backup. You can also run
+    <code>Mback.py</code> independently through Windows Task Scheduler or
+    another scheduler for automatic daily backups; the dashboard does not
+    need to be open for scheduled runs.
+  </p>
+
+  <p class="disclaimer">
+    Mback is designed to reduce exposure by keeping mail data local by
+    default and using read-only access. It is not a substitute for your own
+    backup, endpoint-security, encryption, or compliance practices, and it
+    makes no legal or compliance guarantees.
+  </p>
+</section>
+
+{% endblock %}

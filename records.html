@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% from "_icons.html" import icon_search, icon_folder, icon_open %}
+{% block title %}Backup Records{% endblock %}
+{% block content %}
+
+<div class="page-header">
+  <div>
+    <h1>Backup Records</h1>
+    <p class="subtitle">Search and filter everything Mback has recorded</p>
+  </div>
+</div>
+
+<section class="panel" aria-label="Filters">
+  <h2>{{ icon_search('icon') }}<span>Filters</span></h2>
+  <form id="filter-form" class="filters" onsubmit="return false;">
+    <div class="field">
+      <label for="filter-folder">Folder</label>
+      <select id="filter-folder"><option value="">All folders</option></select>
+    </div>
+    <div class="field">
+      <label for="filter-status">Status</label>
+      <select id="filter-status">
+        <option value="">All statuses</option>
+        <option value="backed_up">Backed up</option>
+        <option value="failed">Failed</option>
+      </select>
+    </div>
+    <div class="field field-grow">
+      <label for="filter-search">Search (UID or filename)</label>
+      <input id="filter-search" type="text" maxlength="120" placeholder="e.g. 4821 or invoice" />
+    </div>
+    <div class="field">
+      <label for="filter-page-size">Per page</label>
+      <select id="filter-page-size">
+        {% for size in allowed_page_sizes %}
+        <option value="{{ size }}"{{ ' selected' if size == default_page_size else '' }}>{{ size }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button type="submit" class="btn btn-secondary">Apply</button>
+    <button type="button" id="clear-filters-btn" class="btn btn-text">Clear</button>
+  </form>
+  <p class="field-hint">Search matches a message&rsquo;s UID exactly, or looks for the text within its saved filename.</p>
+</section>
+
+<section class="panel" aria-label="Records">
+  <h2>{{ icon_folder('icon') }}<span>Records</span></h2>
+  <div class="table-wrap">
+    <table id="records-table">
+      <thead>
+        <tr><th>Updated</th><th>Folder</th><th>UID</th><th>Status</th><th>Attempts</th><th>File</th><th></th></tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+    <p class="empty-state" id="records-empty" hidden>No records match the current filters.</p>
+  </div>
+  <div class="pagination" id="pagination">
+    <button id="prev-page-btn" class="btn btn-text" type="button">Previous</button>
+    <span id="page-info">Page 1 of 1</span>
+    <button id="next-page-btn" class="btn btn-text" type="button">Next</button>
+  </div>
+</section>
+
+{% endblock %}
